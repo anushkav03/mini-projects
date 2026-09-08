@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- An input field with a submit button where you can 
+    type your single priority for the day. -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You Have One Job</title>
+</head>
+<body>
+    <h1>You Have One Job And It Is To...</h1>
+    <h1 id="displayTask" style="display: inline-block; margin-right: 15px;"></h1>
+    <button id="doneBtn">Goal Done</button>
+    <br>
+    <br>
+    <input id="taskInput" type="text" placeholder="not commit manslaughter">
+    <button id="saveBtn">Set Goal</button>
+    <h2>Past Goals</h2>
+    <button id="clearHistory">Clear History</button>
+    <ul id="goalHistory"></ul>
+
+    <script>
+        const displayTask = document.getElementById('displayTask');
+        const taskInput = document.getElementById('taskInput');
+        const saveBtn = document.getElementById('saveBtn');
+        const doneBtn = document.getElementById('doneBtn');
+        const listElement = document.getElementById('goalHistory')
+        const clearHistory = document.getElementById('clearHistory')
+
+        //  test
+        // const t1 = {task: "gym", date:"today", status:"active"}
+        // const t2 = {task: "breakfast", date:"today", status:"fin"}
+        // const t3 = {task: "yoga", date:"today", status:"fail"}
+        // const taskList = [t1, t2, t3]
+
+        // localStorage.setItem('goalHistory', JSON.stringify([t1, t2, t3]))
+
+        
+        // display past goals
+        function reloadHistory() {
+            const raw = localStorage.getItem('goalHistory');
+            const goalsArray = raw ? JSON.parse(raw) : [];
+
+            listElement.innerHTML = '';
+            goalsArray.toReversed().forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = `${item.date}: ${item.task}`;
+                
+
+                if (item.status == 'active') {
+                    li.style.color = 'orange';
+                } else if (item.status == 'fin') {
+                    li.style.color = 'green';
+                } else if (item.status == 'fail') {
+                    li.style.color = 'red';
+                } else {
+                    li.style.color = 'gray';
+                }
+
+                listElement.appendChild(li)
+            });
+        };
+
+        reloadHistory();
+
+        //  display current goal if exists
+        const currGoal = localStorage.getItem('currGoal')
+        if (currGoal) {
+            displayTask.innerText = currGoal;
+            doneBtn.style.display = 'inline-block';
+        } else {
+            doneBtn.style.display = 'none';
+        };
+
+        //  set goal button
+        saveBtn.addEventListener('click', function() {
+            const raw = localStorage.getItem('goalHistory');
+            const goalsArray = raw ? JSON.parse(raw) : [];
+
+            // get value from input box
+            const userInput = taskInput.value;
+            if (userInput) {
+            // change header display & show done btn
+            displayTask.innerText = userInput;
+            doneBtn.style.display = 'inline-block';
+
+            // update local storage: add to goals list & update current goal
+            localStorage.setItem('currGoal', userInput);
+
+            const date = new Date().toLocaleDateString('en-GB');
+            const newGoal = {task: userInput, date: date, status: 'active'};
+            goalsArray.push(newGoal);
+            localStorage.setItem('goalHistory', JSON.stringify(goalsArray));
+
+            // reset input box
+            taskInput.value = '';
+            reloadHistory();
+            };
+        });
+
+        //  clear history button
+        clearHistory.addEventListener('click', function() {
+            localStorage.clear();
+            displayTask.innerText = '';
+            doneBtn.style.display = 'none';
+            reloadHistory();
+        });
+
+        // goal done button
+        doneBtn.addEventListener('click', function() {
+            // update curr goal: both header & local storage
+            displayTask.innerText = '';
+            localStorage.removeItem('currGoal')
+
+            // update goal status in local storage goalHistory list
+            const raw = localStorage.getItem('goalHistory');
+            const goalsArray = raw ? JSON.parse(raw) : [];
+            goalsArray.at(-1).status = 'fin';
+            localStorage.setItem('goalHistory', JSON.stringify(goalsArray));
+            reloadHistory();
+
+            // hide the done btn
+            doneBtn.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
+
+<!-- add: one job per day + auto fail failed tasks -->
