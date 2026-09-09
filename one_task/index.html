@@ -41,11 +41,25 @@
             const raw = localStorage.getItem('goalHistory');
             const goalsArray = raw ? JSON.parse(raw) : [];
 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            var changes = false;
+
             listElement.innerHTML = '';
             goalsArray.toReversed().forEach(item => {
                 const li = document.createElement('li');
-                li.innerText = `${item.date}: ${item.task}`;
-                
+                const date = new Date(item.date);
+                li.innerText = `${date.toLocaleDateString('en-GB')}: ${item.task}`;
+
+                // check for failed tasks
+                if (item.status == 'active' && date.getTime() < today) {
+                    item.status = 'fail';
+                    // if failed task was same as active task, clear current display
+                    if ((item.task) === localStorage.getItem('currGoal')) {
+                        localStorage.removeItem('currGoal');
+                    };
+                    changes = true;
+                }
 
                 if (item.status == 'active') {
                     li.style.color = 'orange';
@@ -59,6 +73,11 @@
 
                 listElement.appendChild(li)
             });
+
+            // if changes were made (outdated tasks), update local storage
+            if (changes) {
+                localStorage.setItem('goalHistory', JSON.stringify(goalsArray));
+            }
         };
 
         reloadHistory();
@@ -69,6 +88,7 @@
             displayTask.innerText = currGoal;
             doneBtn.style.display = 'inline-block';
         } else {
+            displayTask.innerText = '';
             doneBtn.style.display = 'none';
         };
 
@@ -76,26 +96,31 @@
         saveBtn.addEventListener('click', function() {
             const raw = localStorage.getItem('goalHistory');
             const goalsArray = raw ? JSON.parse(raw) : [];
+            
+            if (goalsArray.length==0 || goalsArray.at(-1).status != 'active') {
+                // get value from input box
+                const userInput = taskInput.value;
+                if (userInput) {
+                // change header display & show done btn
+                displayTask.innerText = userInput;
+                doneBtn.style.display = 'inline-block';
 
-            // get value from input box
-            const userInput = taskInput.value;
-            if (userInput) {
-            // change header display & show done btn
-            displayTask.innerText = userInput;
-            doneBtn.style.display = 'inline-block';
+                // update local storage: add to goals list & update current goal
+                localStorage.setItem('currGoal', userInput);
 
-            // update local storage: add to goals list & update current goal
-            localStorage.setItem('currGoal', userInput);
+                const date = new Date();
+                date.setHours(0, 0, 0, 0);
+                const newGoal = {task: userInput, date: date, status: 'active'};
+                goalsArray.push(newGoal);
+                localStorage.setItem('goalHistory', JSON.stringify(goalsArray));
 
-            const date = new Date().toLocaleDateString('en-GB');
-            const newGoal = {task: userInput, date: date, status: 'active'};
-            goalsArray.push(newGoal);
-            localStorage.setItem('goalHistory', JSON.stringify(goalsArray));
-
-            // reset input box
-            taskInput.value = '';
-            reloadHistory();
-            };
+                // reset input box
+                taskInput.value = '';
+                reloadHistory();
+                };
+            } else {
+                alert("Only one active task at a time! You have ONE job today!");
+            }
         });
 
         //  clear history button
