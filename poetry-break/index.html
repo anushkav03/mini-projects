@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take A Poetry Break</title>
+</head>
+<body>
+    <h2>How many minutes do you have?</h2>
+    <input id="timeInput" type="number" placeholder=10>
+    <button id="submitBtn">Submit</button>
+    <br>
+    <br>
+    <br>
+    <div style="max-width: 500px">
+        <h2 id="poemTitle"></h2>
+        <h3 id="author" style="font-weight: normal; font-style: italic; text-align: right;"></h3>
+        <p id="poem"></p>
+    </div>
+    
+    <script>
+        const timeInput = document.getElementById('timeInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const poemElem = document.getElementById('poem');
+        const poemTitle = document.getElementById('poemTitle');
+        const author = document.getElementById('author');
+
+        async function loadPoem(linecount) {
+            const url = `https://poetrydb.org/linecount,random/${linecount};1`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            return data[0];
+        };
+
+        submitBtn.addEventListener('click', async function() {
+            const linecount = Math.floor(timeInput.value * 60 / 7);
+            const poemObj = await loadPoem(linecount);
+            
+            poemTitle.innerText = poemObj.title;
+            author.innerText = poemObj.author;
+            poemElem.innerText = '';
+            poemObj.lines.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                poemElem.appendChild(li);
+            });
+            
+        });
+    </script>
+</body>
+</html>
+
+<!-- /title/sea[:word][..][:<search type>][/<output field>][,<output field>][..][.<format>] -->
