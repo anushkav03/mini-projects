@@ -10,6 +10,12 @@
     <input id="timeInput" type="number" placeholder=10>
     <button id="submitBtn">Submit</button>
     <br>
+    <p class="tagline">Trade your default doomscrolling for something more poetic. Enter your available break time and we'll serve up an appropriately-sized poem!
+    <br>
+        <small class="credits">
+            Powered by the <a href="https://poetrydb.org" target="_blank" rel="noopener noreferrer">PoetryDB API</a> created by <a href="https://github.com/thundercomb" target="_blank" rel="noopener noreferrer">thundercomb</a>.
+        </small>
+    </p>
     <br>
     <br>
     <div style="max-width: 500px">
@@ -34,7 +40,7 @@
         };
 
         submitBtn.addEventListener('click', async function() {
-            const linecount = Math.floor(timeInput.value * 60 / 7);
+            const linecount = Math.floor(timeInput.value * 2);
             const poemObj = await loadPoem(linecount);
             
             poemTitle.innerText = poemObj.title;
